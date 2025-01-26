@@ -16,7 +16,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class MediaProcessorApp:
     def __init__(self, master):
         self.master = master
-        master.title("BlackHole AI")
+        master.title("BlackHole AI ")
         master.geometry("1000x700")
         
         # التحقق من التحديثات
