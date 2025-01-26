@@ -62,46 +62,15 @@ class MediaProcessorApp:
         )
         self.secondary_check.pack(side="right", padx=5)
 
-        # إدخال الفيديو
-        video_frame = tk.LabelFrame(self.master, text="إدخال الفيديو", padx=10, pady=10)
-        video_frame.pack(fill="x", padx=10, pady=5)
+        # إدخال الصور والفيديو
+        media_frame = tk.LabelFrame(self.master, text="إدخال الوسائط (صور وفيديوهات)", padx=10, pady=10)
+        media_frame.pack(fill="x", padx=10, pady=5)
         
-        self.video_btn = tk.Button(video_frame, text="اختر فيديو", command=self.select_video)
-        self.video_btn.pack(side="left", padx=5)
+        self.media_btn = tk.Button(media_frame, text="اختر صور وفيديوهات", command=self.select_media)
+        self.media_btn.pack(side="left", padx=5)
         
-        self.video_label = tk.Label(video_frame, text="لم يتم اختيار فيديو")
-        self.video_label.pack(side="left", fill="x", expand=True)
-        
-        self.remove_video_btn = tk.Button(video_frame, text="إزالة الفيديو", command=self.remove_video)
-        self.remove_video_btn.pack(side="right", padx=5)
-
-        # إدخال الصور
-        image_frame = tk.LabelFrame(self.master, text="إدخال الصور", padx=10, pady=10)
-        image_frame.pack(fill="x", padx=10, pady=5)
-        
-        self.image_btn = tk.Button(image_frame, text="اختر صور", command=self.select_images)
-        self.image_btn.pack(side="left", padx=5)
-        
-        self.image_label = tk.Label(image_frame, text="لم يتم اختيار صور")
-        self.image_label.pack(side="left", fill="x", expand=True)
-
-        self.remove_image_btn = tk.Button(image_frame, text="إزالة الصور", command=self.remove_images)
-        self.remove_image_btn.pack(side="right", padx=5)
-
-        # قائمة منسدلة لاختيار الملفات لإزالة
-        self.remove_files_label = tk.Label(self.master, text="اختر ملف لإزالته")
-        self.remove_files_label.pack(pady=5)
-
-        self.remove_files_combobox = ttk.Combobox(self.master, state="readonly")
-        self.remove_files_combobox.pack(pady=5)
-
-        # زر لإزالة الملف المحدد من القائمة
-        self.remove_selected_btn = tk.Button(self.master, text="إزالة الملف المحدد", command=self.remove_selected)
-        self.remove_selected_btn.pack(pady=5)
-
-        # زر لإزالة جميع الصور والفيديوهات
-        self.remove_all_btn = tk.Button(self.master, text="إزالة جميع الملفات", command=self.remove_all)
-        self.remove_all_btn.pack(pady=5)
+        self.media_label = tk.Label(media_frame, text="لم يتم اختيار أي ملفات")
+        self.media_label.pack(side="left", fill="x", expand=True)
 
         # إخراج
         output_frame = tk.LabelFrame(self.master, text="دليل الإخراج", padx=10, pady=10)
@@ -113,13 +82,21 @@ class MediaProcessorApp:
         self.output_label = tk.Label(output_frame, text="لم يتم اختيار دليل الإخراج")
         self.output_label.pack(side="left", fill="x", expand=True)
 
-        # التقدم
+        # التقدم العام
         self.progress = ttk.Progressbar(self.master, orient="horizontal", length=400, mode="determinate")
         self.progress.pack(pady=20)
 
         # الحالة
         self.status_label = tk.Label(self.master, text="جاهز", fg="green")
         self.status_label.pack(pady=10)
+
+        # عرض اسم العملية الجارية
+        self.current_file_label = tk.Label(self.master, text="العملية الحالية: لا شيء", fg="blue")
+        self.current_file_label.pack(pady=5)
+
+        # شريط التقدم للعملية الجارية
+        self.current_file_progress = ttk.Progressbar(self.master, orient="horizontal", length=400, mode="determinate")
+        self.current_file_progress.pack(pady=5)
 
         # التحكم
         control_frame = tk.Frame(self.master)
@@ -143,66 +120,13 @@ class MediaProcessorApp:
             self.secondary_model = None
             self.status_label.config(text="تم تعطيل النموذج الثانوي", fg="orange")
 
-    def select_video(self):
-        files = filedialog.askopenfilenames(filetypes=[("ملفات الفيديو", "*.mp4 *.avi *.mov *.mkv")])
+    def select_media(self):
+        files = filedialog.askopenfilenames(filetypes=[("الوسائط", "*.png *.jpg *.jpeg *.bmp *.tiff *.gif *.mp4 *.avi *.mov *.mkv")])
         if files:
-            self.current_video = files
-            self.video_label.config(text=f"{len(files)} فيديوهات مختارة")
-            self.update_file_list()
-
-    def select_images(self):
-        files = filedialog.askopenfilenames(filetypes=[("ملفات الصور", "*.png *.jpg *.jpeg *.bmp *.tiff *.gif")])
-        if files:
-            self.current_images = files
-            self.image_label.config(text=f"{len(files)} صور مختارة")
-            self.update_file_list()
-
-    def update_file_list(self):
-        file_list = []
-        if hasattr(self, 'current_video'):
-            file_list.extend(self.current_video)
-        if hasattr(self, 'current_images'):
-            file_list.extend(self.current_images)
-        
-        self.remove_files_combobox['values'] = file_list
-
-    def remove_selected(self):
-        selected_file = self.remove_files_combobox.get()
-        if selected_file:
-            if selected_file in self.current_video:
-                self.current_video.remove(selected_file)
-            elif selected_file in self.current_images:
-                self.current_images.remove(selected_file)
-            
-            self.update_file_list()
-            messagebox.showinfo("تم الحذف", f"تم إزالة {selected_file}")
+            self.media_files = list(files)
+            self.media_label.config(text=f"تم اختيار {len(files)} ملف/ملفات")
         else:
-            messagebox.showwarning("تحذير", "يرجى اختيار ملف من القائمة لإزالته.")
-
-    def remove_all(self):
-        if hasattr(self, 'current_video'):
-            self.current_video = []
-        if hasattr(self, 'current_images'):
-            self.current_images = []
-
-        self.update_file_list()
-        messagebox.showinfo("تم الحذف", "تم إزالة جميع الصور والفيديوهات المحددة.")
-
-    def remove_video(self):
-        if hasattr(self, 'current_video') and self.current_video:
-            self.current_video = []
-            self.video_label.config(text="لم يتم اختيار فيديو")
-            self.update_file_list()
-        else:
-            messagebox.showwarning("تحذير", "لا يوجد فيديو لحذفه.")
-
-    def remove_images(self):
-        if hasattr(self, 'current_images') and self.current_images:
-            self.current_images = []
-            self.image_label.config(text="لم يتم اختيار صور")
-            self.update_file_list()
-        else:
-            messagebox.showwarning("تحذير", "لا توجد صور لحذفها.")
+            self.media_label.config(text="لم يتم اختيار أي ملفات")
 
     def select_output(self):
         folder = filedialog.askdirectory()
@@ -222,14 +146,17 @@ class MediaProcessorApp:
 
     def process_image(self, img_path, output_path):
         try:
+            self.current_file_label.config(text=f"معالجة الصورة: {img_path}")
+            self.master.update_idletasks()
+            
             if self.advanced_content_verification(img_path):
                 img = cv2.imread(img_path)
                 h, w = img.shape[:2]
                 x, y, w_, h_ = int(w*0.1), int(h*0.1), int(w*0.8), int(h*0.8)
                 img[y:y+h_, x:x+w_] = cv2.GaussianBlur(img[y:y+h_, x:x+w_], (31, 31), 30)
                 cv2.imwrite(output_path, img)
-                return True
-            return False
+                self.current_file_progress['value'] = 100  # اكتمال
+            return True
         except Exception as e:
             print(f"Error processing image: {str(e)}")
             return False
@@ -258,8 +185,14 @@ class MediaProcessorApp:
             
             # معالجة الفريمات
             frames = sorted([os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if f.endswith('.png')])
+            self.total_files = len(frames)
+            self.processed_files = 0
             
             for i, frame_path in enumerate(frames):
+                self.current_file_label.config(text=f"معالجة الإطار: {frame_path}")
+                self.current_file_progress['value'] = (i / len(frames)) * 100
+                self.master.update_idletasks()
+                
                 if self.advanced_content_verification(frame_path):
                     start = max(0, i-3)
                     end = min(len(frames), i+4)
@@ -271,7 +204,7 @@ class MediaProcessorApp:
                         frame[y:y+h_, x:x+w_] = cv2.GaussianBlur(frame[y:y+h_, x:x+w_], (31, 31), 30)
                         cv2.imwrite(frames[j], frame)
                 
-                # تحديث التقدم
+                # تحديث التقدم العام
                 self.processed_files += 1
                 self.progress['value'] = (self.processed_files / self.total_files) * 100
                 self.master.update_idletasks()
@@ -307,59 +240,32 @@ class MediaProcessorApp:
             self.status_label.config(text="يرجى اختيار دليل الإخراج", fg="red")
             return
         
-        files_to_process = []
-        if hasattr(self, 'current_video'):
-            files_to_process.extend(self.current_video)
-        if hasattr(self, 'current_images'):
-            files_to_process.extend(self.current_images)
+        if not hasattr(self, 'media_files') or not self.media_files:
+            self.status_label.config(text="يرجى اختيار صور وفيديوهات", fg="red")
+            return
         
-        self.total_files = len(files_to_process)
+        self.total_files = len(self.media_files)
         self.processed_files = 0
-        self.progress['value'] = 0
-        self.processing = True
-        self.start_btn.config(state="disabled")
+
+        # تشغيل المعالجة في خيط منفصل
+        self.processing_thread = threading.Thread(target=self.process_files)
+        self.processing_thread.start()
+
+    def process_files(self):
+        for media_file in self.media_files:
+            output_path = os.path.join(self.output_dir, os.path.basename(media_file))
+            if media_file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.gif')):
+                self.process_image(media_file, output_path)
+            elif media_file.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+                self.process_video(media_file, output_path)
+
+        self.status_label.config(text="تمت المعالجة بنجاح!", fg="green")
         self.cancel_btn.config(state="normal")
         
-        # تشغيل المعالجة في ثيل منفصل
-        processing_thread = threading.Thread(target=self.process_files, args=(files_to_process,))
-        processing_thread.start()
-
-    def process_files(self, files):
-        try:
-            for file_path in files:
-                if not self.processing:
-                    break
-                
-                output_path = os.path.join(self.output_dir, os.path.basename(file_path))
-                
-                if file_path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
-                    self.process_video(file_path, output_path)
-                else:
-                    self.process_image(file_path, output_path)
-                    self.processed_files += 1
-                    self.progress['value'] = (self.processed_files / self.total_files) * 100
-                    self.master.update_idletasks()
-                
-                # إزالة الملف من القائمة بعد المعالجة
-                if file_path in self.current_video:
-                    self.current_video.remove(file_path)
-                elif file_path in self.current_images:
-                    self.current_images.remove(file_path)
-
-                # تحديث القائمة بعد إزالة الملفات المعالجة
-                self.update_file_list()
-
-            self.status_label.config(text="تمت المعالجة بنجاح!", fg="green")
-        except Exception as e:
-            self.status_label.config(text=f"خطأ: {str(e)}", fg="red")
-        finally:
-            self.processing = False
-            self.start_btn.config(state="normal")
-            self.cancel_btn.config(state="disabled")
-
     def cancel_processing(self):
-        self.processing = False
-        self.status_label.config(text="تم إلغاء المعالجة", fg="orange")
+        if hasattr(self, 'processing_thread') and self.processing_thread.is_alive():
+            self.status_label.config(text="تم إلغاء المعالجة", fg="orange")
+            self.processing_thread.join()  # الانتظار حتى ينتهي الخيط
 
 if __name__ == "__main__":
     root = tk.Tk()
