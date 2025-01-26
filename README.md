@@ -53,7 +53,7 @@
 
 إذا كنت ترغب في المساهمة في المشروع وتحسينه، يمكنك القيام بما يلي:
 
-1. **فتح مشكلة جديدة** عبر [GitHub Issues](https://github.com/MasterHunterr/issues).
+1. **فتح مشكلة جديدة** عبر [GitHub Issues](https://github.com/MasterHunterr/BlackHoleAI/pulls).
 2. **فتح Pull Request** للمساهمة بالكود أو إضافة تحسينات.
 
 ---
